@@ -8,6 +8,7 @@ from datetime import datetime
 import cv2
 from processor import ImageProcessor
 import easyocr
+from extractor import extract_fields
 
 app = FastAPI()
 processor = ImageProcessor()
@@ -99,3 +100,15 @@ async def ocr(file: UploadFile = File(...)):
     text = " ".join([result[1] for result in results])
 
     return {"text": text}
+@app.post("/extract")
+async def extract(file: UploadFile = File(...)):
+    input_path = f"uploads/{file.filename}"
+    with open(input_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    results = reader.readtext(input_path)
+    text = " ".join([result[1] for result in results])
+
+    fields = extract_fields(text)
+
+    return {"raw_text": text, "extracted": fields}
