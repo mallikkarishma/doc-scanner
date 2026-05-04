@@ -7,9 +7,11 @@ import json
 from datetime import datetime
 import cv2
 from processor import ImageProcessor
+import easyocr
 
 app = FastAPI()
 processor = ImageProcessor()
+reader = easyocr.Reader(['en'])
 
 app.add_middleware(
     CORSMiddleware,
@@ -86,3 +88,14 @@ async def threshold(file: UploadFile = File(...)):
     cv2.imwrite(output_path, result)
 
     return FileResponse(output_path, media_type="image/jpeg")
+
+@app.post("/ocr")
+async def ocr(file: UploadFile = File(...)):
+    input_path = f"uploads/{file.filename}"
+    with open(input_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    results = reader.readtext(input_path)
+    text = " ".join([result[1] for result in results])
+
+    return {"text": text}
