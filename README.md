@@ -1,70 +1,93 @@
-# Getting Started with Create React App
+# Document AI Scanner
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack web application that scans documents and ID cards, processes images, and automatically extracts text information using OCR and AI.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Drag and drop file upload
+- Image processing — grayscale, perspective correction, adaptive thresholding
+- OCR text extraction using EasyOCR
+- AI-powered structured data extraction using Groq LLaMA
+- Auto-fill form with extracted information
+- File metadata tracking with JSON storage
 
-### `npm start`
+## Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+**Frontend**
+- React
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+**Backend**
+- FastAPI (Python)
+- OpenCV
+- EasyOCR
+- Groq LLaMA 3.3
 
-### `npm test`
+## Getting Started
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
 
-### `npm run build`
+- Node.js
+- Python 3.8+
+- Groq API key from https://console.groq.com
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Clone the repository
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    git clone https://github.com/mallikkarishma/doc-scanner.git
+    cd doc-scanner
 
-### `npm run eject`
+Setup Backend
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+    cd backend
+    pip install fastapi uvicorn opencv-python easyocr groq python-dotenv python-multipart numpy
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Create a .env file inside the backend folder
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+    GROQ_API_KEY=your-api-key-here
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Run the backend
 
-## Learn More
+    uvicorn main:app --reload
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Setup Frontend
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    cd ..
+    npm install
+    npm start
 
-### Code Splitting
+## Usage
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+1. Open http://localhost:3000 in your browser
+2. Upload any document or ID card image
+3. Select a processing mode — Grayscale, Deskew or Threshold
+4. Click Process to apply image processing
+5. Click Extract with AI to automatically extract and fill the form
 
-### Analyzing the Bundle Size
+## API Endpoints
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+POST /upload — Upload and save a file
+POST /grayscale — Convert image to grayscale
+POST /deskew — Straighten a tilted document
+POST /threshold — Apply adaptive thresholding
+POST /ocr — Extract raw text from image
+POST /extract — Extract fields using Regex
+POST /gemini — Extract fields using Groq AI
 
-### Making a Progressive Web App
+## Project Structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+doc-scanner/
+├── src/
+│   └── App.js
+├── backend/
+│   ├── main.py
+│   ├── processor.py
+│   ├── extractor.py
+│   ├── uploads/
+│   └── processed/
+├── public/
+└── README.md
 
-### Advanced Configuration
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MIT
