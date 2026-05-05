@@ -6,17 +6,19 @@ import os
 import json
 from datetime import datetime
 import cv2
+import pytesseract
 from processor import ImageProcessor
-import easyocr
 from groq import Groq
 from extractor import extract_fields
 from dotenv import load_dotenv
 
 load_dotenv()
 
+# Tesseract path
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
 app = FastAPI()
 processor = ImageProcessor()
-reader = easyocr.Reader(['en'])
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 app.add_middleware(
@@ -33,6 +35,7 @@ METADATA_FILE = "metadata.json"
 if not os.path.exists(METADATA_FILE):
     with open(METADATA_FILE, "w") as f:
         json.dump([], f)
+
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
@@ -53,6 +56,7 @@ async def upload_file(file: UploadFile = File(...)):
 
     return {"filename": file.filename, "message": "File uploaded successfully"}
 
+
 @app.post("/grayscale")
 async def grayscale(file: UploadFile = File(...)):
     input_path = f"uploads/{file.filename}"
@@ -66,6 +70,7 @@ async def grayscale(file: UploadFile = File(...)):
     cv2.imwrite(output_path, result)
 
     return FileResponse(output_path, media_type="image/jpeg")
+
 
 @app.post("/deskew")
 async def deskew(file: UploadFile = File(...)):
@@ -81,6 +86,7 @@ async def deskew(file: UploadFile = File(...)):
 
     return FileResponse(output_path, media_type="image/jpeg")
 
+
 @app.post("/threshold")
 async def threshold(file: UploadFile = File(...)):
     input_path = f"uploads/{file.filename}"
@@ -95,16 +101,18 @@ async def threshold(file: UploadFile = File(...)):
 
     return FileResponse(output_path, media_type="image/jpeg")
 
+
 @app.post("/ocr")
 async def ocr(file: UploadFile = File(...)):
     input_path = f"uploads/{file.filename}"
     with open(input_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    results = reader.readtext(input_path)
-    text = " ".join([result[1] for result in results])
+    text = pytesseract.image_to_string(input_path)
+    print("OCR TEXT:", text)
 
     return {"text": text}
+
 
 @app.post("/extract")
 async def extract(file: UploadFile = File(...)):
@@ -112,12 +120,13 @@ async def extract(file: UploadFile = File(...)):
     with open(input_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    results = reader.readtext(input_path)
-    text = " ".join([result[1] for result in results])
+    text = pytesseract.image_to_string(input_path)
+    print("OCR TEXT:", text)
 
     fields = extract_fields(text)
 
     return {"raw_text": text, "extracted": fields}
+
 
 @app.post("/gemini")
 async def gemini_extract(file: UploadFile = File(...)):
@@ -125,8 +134,9 @@ async def gemini_extract(file: UploadFile = File(...)):
     with open(input_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    results = reader.readtext(input_path)
-    text = " ".join([result[1] for result in results])
+    # Read original image directly — no preprocessing needed
+    text = pytesseract.image_to_string(input_path)
+    print("OCR TEXT:", text)
 
     prompt = f"""
     Extract the following fields from this ID card text and return ONLY a JSON object:
